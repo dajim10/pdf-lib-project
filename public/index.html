@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Merge</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        h2 {
+            text-align: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 2px solid #ddd;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+        input[type="file"] {
+            margin-bottom: 10px;
+        }
+        button[type="submit"] {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Upload PDF Files to Merge</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" name="pdfFiles" id="pdfFiles" accept=".pdf" multiple>
+            <button type="submit">Merge PDF Files</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData();
+            const filesInput = document.getElementById('pdfFiles');
+
+            for (const file of filesInput.files) {
+                formData.append('pdfFiles', file);
+            }
+
+            try {
+                const response = await fetch('/merge', {
+                    method: 'POST',
+                    body: formData,
+
+                    // This is required to send files in the request
+                    headers: {
+                        'Accept': 'application/pdf'
+                    }
+
+                    
+                });
+
+                if (response.ok) {
+                    const mergedBlob = await response.blob();
+                    const url = URL.createObjectURL(mergedBlob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', 'merged.pdf');
+                    link.click();
+                } else {
+                    console.error('Failed to merge PDF files:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error merging PDF files:', error);
+            }
+        });
+    </script>
+</body>
+</html>
